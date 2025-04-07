@@ -1,0 +1,43 @@
+resources/js/
+├── Components/
+│   ├── Admin/
+│   │   ├── CategoryForm.jsx
+│   │   └── ProductForm.jsx
+│   └── Frontend/
+│       ├── ProductCard.jsx
+│       └── CartItem.jsx
+├── Pages/
+│   ├── Admin/
+│   │   ├── Categories/
+│   │   │   ├── Index.jsx
+│   │   │   ├── Create.jsx
+│   │   │   └── Edit.jsx
+│   │   └── Products/
+│   │       ├── Index.jsx
+│   │       ├── Create.jsx
+│   │       └── Edit.jsx
+│   └── Frontend/
+│       ├── Home.jsx
+│       ├── Products/
+│       │   ├── Index.jsx
+│       │   └── Show.jsx
+│       └── Cart.jsx
+└── Layouts/
+    ├── AdminLayout.jsx
+    └── FrontendLayout.jsx
+
+
+==================================
+          install package
+==================================
+    # ইমেজ ম্যানিপুলেশনের জন্য
+    composer require intervention/image
+
+    # পেমেন্ট গেটওয়ে (যদি লাগে)
+    composer require stripe/stripe-php
+
+    # এক্সেল এক্সপোর্ট/ইমপোর্টের জন্য
+    composer require maatwebsite/excel
+
+    npm install @fortawesome/fontawesome-free
+    npm install sweetalert2
