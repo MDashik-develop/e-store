@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
+use App\Models\ProductImage;
 
 class ProductController extends Controller
 {
@@ -13,8 +16,12 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->get();
-        return Inertia::render('Admin/Product/Index' , [
+        // ✅ Only primary images loaded
+        $products = Product::with(['images' => function ($query) {
+            $query->where('is_primary', true);
+        }])->latest()->get();
+
+        return Inertia::render('Admin/Product/Index', [
             'products' => $products,
         ]);
     }
@@ -24,6 +31,10 @@ class ProductController extends Controller
      */
     public function create()
     {
+        $caregories = Category::all();
+        return Inertia::render('Admin/Product/Create', [
+            'categories' => $caregories
+        ]);
         return Inertia::render('Admin/Product/Create');
     }
 
@@ -39,9 +50,22 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'status' => 'required|boolean',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 👈 validate each image
         ]);
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('products', 'public');
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image' => $path,
+                    'is_primary' => $index === 0, // set first image as primary
+                ]);
+            }
+        }
 
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
     }

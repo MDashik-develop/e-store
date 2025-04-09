@@ -4,14 +4,14 @@ import { Head, Link, useForm } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
 
 export default function Index({ products: initialProducts }) {
-    const [products, setProducts] = useState(initialProducts); // ✅ Fixed state setter
+    const [products, setProducts] = useState(initialProducts);
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this product?")) {
             destroy(`/admin/products/${id}`, {
                 onSuccess: () => {
-                    setProducts(products.filter((product) => product.id !== id)); // ✅ Fixed function
+                    setProducts(products.filter((product) => product.id !== id));
                 },
             });
         }
@@ -20,7 +20,6 @@ export default function Index({ products: initialProducts }) {
     return (
         <AppLayout>
             <Head title="Products" />
-
             <div className="p-6 bg-white rounded shadow">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">Products</h2>
@@ -34,6 +33,7 @@ export default function Index({ products: initialProducts }) {
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="border px-4 py-2">ID</th>
+                                <th className="border px-4 py-2">Image</th>
                                 <th className="border px-4 py-2">Name</th>
                                 <th className="border px-4 py-2">Status</th>
                                 <th className="border px-4 py-2">Actions</th>
@@ -44,6 +44,17 @@ export default function Index({ products: initialProducts }) {
                                 products.map((product) => (
                                     <tr key={product.id} className="text-center">
                                         <td className="border px-4 py-2">{product.id}</td>
+                                        <td className="border px-4 py-2">
+                                            {product.images?.[0]?.image ? (
+                                                <img
+                                                    src={`/storage/${product.images[0].image}`}
+                                                    alt={product.name}
+                                                    className="w-16 h-16 object-cover rounded"
+                                                />
+                                            ) : (
+                                                <span className="text-gray-400">No Image</span>
+                                            )}
+                                        </td>
                                         <td className="border px-4 py-2">{product.name}</td>
                                         <td className="border px-4 py-2">
                                             {product.status ? (
@@ -68,7 +79,7 @@ export default function Index({ products: initialProducts }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="text-center p-4">
+                                    <td colSpan="5" className="text-center p-4">
                                         No products found.
                                     </td>
                                 </tr>
