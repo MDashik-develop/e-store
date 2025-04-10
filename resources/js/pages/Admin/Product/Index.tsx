@@ -2,6 +2,7 @@ import { useState } from "react";
 import AppLayout from "@/layouts/app-layout";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
+import { FilePenLine, Trash2 } from "lucide-react";
 
 export default function Index({ products: initialProducts }) {
     const [products, setProducts] = useState(initialProducts);
@@ -63,16 +64,18 @@ export default function Index({ products: initialProducts }) {
                                                 <span className="text-red-600">Inactive</span>
                                             )}
                                         </td>
-                                        <td className="border px-4 py-2 flex justify-center gap-2">
+                                        <td className="border px-4 py-2">
                                             <Link href={`/admin/products/${product.id}/edit`}>
-                                                <Button>Edit</Button>
+                                                <Button className=" bg-yellow-400 hover:bg-yellow-500">
+                                                        <FilePenLine className="h-[18px]" />
+                                                </Button>
                                             </Link>
                                             <Button
                                                 onClick={() => handleDelete(product.id)}
                                                 disabled={processing}
-                                                className="bg-red-500 hover:bg-red-600"
+                                                className="bg-red-500 hover:bg-red-600 mx-2"
                                             >
-                                                {processing ? "Deleting..." : "Delete"}
+                                                {processing ? "Deleting..." : <Trash2/> }
                                             </Button>
                                         </td>
                                     </tr>

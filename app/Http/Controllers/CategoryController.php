@@ -54,7 +54,9 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         // নির্দিষ্ট ক্যাটাগরি Edit পেজে পাঠানো
-        return Inertia::render('Admin/Categories/Edit', ['category' => $category]);
+        return Inertia::render('Admin/Categories/Edit', [
+            'category' => $category
+        ]);
     }
 
     /**

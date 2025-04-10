@@ -75,31 +75,73 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        // ✅ Fixed variable name
-        return Inertia::render('Admin/Products/Edit', [
-            'product' => $product
+        // Load images with URLs for display
+        $images = $product->images->map(function ($image) {
+            $image->url = asset('storage/' . $image->image);
+            return $image;
+        });
+
+        return Inertia::render('Admin/Product/Edit', [
+            'product' => $product,
+            'images' => $images,  // Pass images to the frontend
+            'categories' => Category::all(),  // Ensure categories are passed too
         ]);
     }
+
+
+
+
 
     /**
      * Update the specified resource in storage.
      */
+
     public function update(Request $request, Product $product)
     {
-        // ✅ Fixed validation rule
+        // Validate the input fields
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:products,name,' . $product->id,
             'status' => 'required|boolean',
         ]);
 
-        // ✅ Updating product
+        // Update product information
         $product->update([
             'name' => $validated['name'],
             'status' => $validated['status'],
         ]);
 
+        // Handle the uploaded images
+        if ($request->hasFile('images')) {
+            // Handle the new images (store them in the storage and add to the product)
+            foreach ($request->file('images') as $image) {
+                // Store the new image in the public storage
+                $imagePath = $image->store('products', 'public');
+                $product->images()->create([
+                    'image' => $imagePath,
+                    'is_primary' => $request->primary_image == $image->getClientOriginalName(),
+                ]);
+            }
+        }
+
+        // Handle the deletion of images (delete from both storage and the database)
+        if ($request->has('deleted_images')) {
+            $deletedImages = $request->deleted_images;
+
+            foreach ($deletedImages as $deletedImage) {
+                // Remove from the database
+                $imageRecord = $product->images()->where('image', $deletedImage)->first();
+                if ($imageRecord) {
+                    // Delete the image from storage
+                    Storage::disk('public')->delete($deletedImage);
+                    $imageRecord->delete();
+                }
+            }
+        }
+
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
+
+
 
     /**
      * Remove the specified resource from storage.
