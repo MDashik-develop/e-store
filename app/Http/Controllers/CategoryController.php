@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -32,19 +33,39 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        // ভ্যালিডেশন চেক
+        // Step 1: Validation
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
             'status' => 'required|boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // নতুন ক্যাটাগরি তৈরি করা
-        Category::create([
+        // Step 2: Save initial category to get the ID
+        $category = Category::create([
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']),
             'status' => $validated['status'],
+            // image is left empty for now
         ]);
 
+        // Step 3: Handle Image Upload (with custom filename)
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+
+            $random = rand(10000, 99999);
+            $extension = $image->getClientOriginalExtension();
+            $filename = "{$category->id}-" . Str::slug($category->name) . "-{$random}." . $extension;
+
+            // storeAs('folder', 'filename', 'disk')
+            $imagePath = $image->storeAs('categories', $filename, 'public');
+
+            // Step 4: Update category with image path
+            $category->update([
+                'image' => $imagePath,
+            ]);
+        }
+
+        // Step 5: Redirect with success message
         return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
     }
 
@@ -85,8 +106,15 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        // ক্যাটাগরি ডিলিট করা
+        // ১. যদি ইমেজ থাকে, তাহলে ডিলিট করো
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        // ২. ডেটাবেস থেকে ক্যাটাগরি ডিলিট করো
         $category->delete();
+
+        // ৩. রিডাইরেক্ট ব্যাক উইথ মেসেজ
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }
 }

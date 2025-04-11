@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ProductImage;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -43,6 +44,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Step 1: Validation
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:1',
@@ -50,25 +52,36 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
             'status' => 'required|boolean',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 👈 validate each image
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Validate each image
         ]);
 
+        // Step 2: Create the product record
         $product = Product::create($validated);
 
+        // Step 3: Handle Image Upload (with custom filename format)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
+                // Step 3.1: Generate a custom filename like the category format
+                $random = rand(10000, 99999);
+                $extension = $image->getClientOriginalExtension();
+                $filename = "{$product->id}-" . Str::slug($product->name) . "-{$random}." . $extension;
 
+                // Step 3.2: Store the image with the custom filename
+                $imagePath = $image->storeAs('products', $filename, 'public');
+
+                // Step 3.3: Save the image details to the ProductImage table
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'image' => $path,
-                    'is_primary' => $index === 0, // set first image as primary
+                    'image' => $imagePath,
+                    'is_primary' => $index === 0, // Set first image as primary
                 ]);
             }
         }
 
+        // Step 4: Redirect with success message
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -87,8 +100,6 @@ class ProductController extends Controller
             'categories' => Category::all(),  // Ensure categories are passed too
         ]);
     }
-
-
 
 
 
@@ -148,8 +159,15 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // ✅ Deleting product
+        $productImages = $product->images;
+        foreach ($productImages as $productImage) {
+            if ($productImage->image && Storage::disk('public')->exists($productImage->image)) {
+                Storage::disk('public')->delete($productImage->image);
+            }
+        }
+
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
     }
 }

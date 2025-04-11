@@ -3,18 +3,18 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 
-export default function Edit({ category }) {
+export default function Create() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         status: '',
+        image: null, // <-- image field
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/admin/categories', {
-            onSuccess: () => {
-                reset();
-            },
+            forceFormData: true, // important for file upload
+            onSuccess: () => reset(),
         });
     };
 
@@ -47,9 +47,17 @@ export default function Edit({ category }) {
                         </select>
                         {errors.status && <p className="text-red-500">{errors.status}</p>}
 
+                        {/* Image Upload Field */}
+                        <input
+                            type="file"
+                            onChange={(e) => setData('image', e.target.files[0])}
+                            className="w-full"
+                        />
+                        {errors.image && <p className="text-red-500">{errors.image}</p>}
+
                         <div className="flex justify-end gap-2">
                             <Button type="submit" disabled={processing}>
-                                {processing ? 'Creating...' : 'Create Product'}
+                                {processing ? 'Creating...' : 'Create Category'}
                             </Button>
                         </div>
                     </form>
