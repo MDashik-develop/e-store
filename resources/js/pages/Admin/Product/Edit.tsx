@@ -1,176 +1,170 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
 import { Star, StarOff, Trash2 } from 'lucide-react';
 
 export default function Edit({ product }) {
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const initialImages = product.images.map(img => ({
+        url: `/storage/${img.image}`,
+        name: img.image,
+    }));
+
+    const { data, setData, post, processing, errors } = useForm({
+        _method: 'put',
         name: product.name,
         description: product.description,
         price: product.price,
         stock: product.stock,
         category_id: product.category_id,
         status: product.status.toString(),
-        images: product.images || [],  // Images should be set from the server
-        primary_image: product.primary_image || null,
+        images: [],
+        primary_image: product.primary_image,
+        deleted_images: [],
     });
 
-    const [previewImages, setPreviewImages] = useState(product.images.map(img => `/storage/${img.image}`)); // Initialize preview images from the product data
-    const [deletedImages, setDeletedImages] = useState([]); // To track deleted images
+    const [previewImages, setPreviewImages] = useState(initialImages);
 
-    // Handle file selection and preview
+    // Handle file changes and display previews
     const handleFileChange = (e) => {
-        const files = e.target.files;
-        if (files) {
-            const selectedFiles = Array.from(files);
-            setData('images', selectedFiles);
+        const files = Array.from(e.target.files);
+        setData('images', files);
 
-            // Create preview URLs
-            const previews = selectedFiles.map(file => URL.createObjectURL(file));
-            setPreviewImages(previews);
+        const previews = files.map(file => ({
+            url: URL.createObjectURL(file),
+            name: file.name,
+        }));
+
+        setPreviewImages([...initialImages, ...previews]);
+    };
+
+    // Handle image deletion
+    const handleImageDelete = (index) => {
+        const img = previewImages[index];
+        setPreviewImages(previewImages.filter((_, i) => i !== index));
+
+        if (!img.url.startsWith('blob:')) {
+            setData('deleted_images', [...data.deleted_images, img.name]);
+        } else {
+            const remainingFiles = data.images.filter(file => file.name !== img.name);
+            setData('images', remainingFiles);
         }
     };
 
-    // Handle image deletion (both from preview and backend)
-    const handleImageDelete = (index) => {
-        const imageToDelete = previewImages[index]; // Get the image to delete from the preview
-        const newPreviewImages = [...previewImages];
-        newPreviewImages.splice(index, 1); // Remove from preview
-        setPreviewImages(newPreviewImages);
-
-        // Remove from form data (images array)
-        const newFormImages = [...data.images];
-        newFormImages.splice(index, 1);
-        setData('images', newFormImages);
-
-        // Add to deleted images list to be sent to the backend
-        setDeletedImages([...deletedImages, imageToDelete]);
+    // Handle selecting the primary image
+    const handlePrimaryImageSelect = (img) => {
+        setData('primary_image', img.name);
     };
 
-    // Handle primary image selection
-    const handlePrimaryImageSelect = (index) => {
-        setData('primary_image', data.images[index]);
-    };
-
-    // Handle form submission (submit to update product)
+    // Submit the form
     const submit = (e) => {
         e.preventDefault();
 
-        put(`/admin/products/${product.id}`, {
-            data: {
-                ...data,
-                deleted_images: deletedImages, // Send the deleted images
-            },
-            onSuccess: () => {
-                reset(); // Reset form after success
-                alert('Product updated successfully!');
-            },
+        // Create a new FormData instance
+        const formData = new FormData();
+        formData.append('_method', 'put');  // To ensure the PUT request
+        formData.append('name', data.name);
+        formData.append('description', data.description);
+        formData.append('price', data.price);
+        formData.append('stock', data.stock);
+        formData.append('category_id', data.category_id);
+        formData.append('status', data.status);
+        formData.append('primary_image', data.primary_image);
+
+        // Append images if any
+        data.images.forEach(file => {
+            formData.append('images[]', file);
+        });
+
+        // Append deleted images
+        data.deleted_images.forEach(imageName => {
+            formData.append('deleted_images[]', imageName);
+        });
+
+        // Send the POST request
+        post(`/admin/products/${product.id}`, {
+            data: formData,
+            forceFormData: true,
+            onSuccess: () => alert('Product updated successfully!'),
+            onError: (errors) => {
+                console.error(errors); // Optionally log errors to console
+            }
         });
     };
 
     return (
         <AppLayout>
             <Head title="Edit Product" />
-            <div className="h-full flex items-center justify-center bg-gray-100 p-4">
-                <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                    <h2 className="text-xl font-bold mb-4">Edit Product</h2>
-                    <form onSubmit={submit} encType="multipart/form-data" className="space-y-4">
-                        <input
-                            type="text"
-                            placeholder="Product Name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                            required
-                            className="w-full p-2 border rounded"
-                        />
-                        {errors.name && <p className="text-red-500">{errors.name}</p>}
+            <form onSubmit={submit} encType="multipart/form-data" className="p-6 bg-white rounded shadow space-y-4 max-w-xl mx-auto mt-10">
+                <input
+                    value={data.name}
+                    onChange={(e) => setData('name', e.target.value)}
+                    placeholder="Name"
+                    className="w-full p-2 border rounded"
+                />
+                <textarea
+                    value={data.description}
+                    onChange={(e) => setData('description', e.target.value)}
+                    placeholder="Description"
+                    className="w-full p-2 border rounded"
+                />
+                <input
+                    value={data.price}
+                    onChange={(e) => setData('price', e.target.value)}
+                    type="number"
+                    placeholder="Price"
+                    className="w-full p-2 border rounded"
+                />
+                <input
+                    value={data.stock}
+                    onChange={(e) => setData('stock', e.target.value)}
+                    type="number"
+                    placeholder="Stock"
+                    className="w-full p-2 border rounded"
+                />
 
-                        <input
-                            type="number"
-                            placeholder="Price"
-                            value={data.price}
-                            onChange={(e) => setData('price', e.target.value)}
-                            required
-                            className="w-full p-2 border rounded"
-                        />
-                        {errors.price && <p className="text-red-500">{errors.price}</p>}
+                <select
+                    value={data.status}
+                    onChange={(e) => setData('status', e.target.value)}
+                    className="w-full p-2 border rounded"
+                >
+                    <option value="">Select Status</option>
+                    <option value="1">Active</option>
+                    <option value="0">Inactive</option>
+                </select>
 
-                        <textarea
-                            placeholder="Description"
-                            value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
-                            required
-                            className="w-full p-2 border rounded"
-                        ></textarea>
+                <input
+                    type="file"
+                    multiple
+                    onChange={handleFileChange}
+                    className="w-full p-2 border rounded"
+                />
+                {errors.images && <div className="text-red-500">{errors.images}</div>}
 
-                        <input
-                            type="number"
-                            placeholder="Stock"
-                            value={data.stock}
-                            onChange={(e) => setData('stock', e.target.value)}
-                            required
-                            className="w-full p-2 border rounded"
-                        />
-
-                        <select
-                            value={data.status}
-                            onChange={(e) => setData('status', e.target.value)}
-                            required
-                            className="w-full p-2 border rounded"
-                        >
-                            <option value="">Select Status</option>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="w-full p-2 border rounded"
-                        />
-
-                        {previewImages.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {previewImages.map((src, index) => (
-                                    <div key={index} className="relative">
-                                        <img
-                                            src={src}
-                                            alt={`Preview ${index}`}
-                                            className={`w-24 h-24 object-cover rounded mt-2 ${data.primary_image === data.images[index] ? 'border-4 border-blue-500' : ''}`}
-                                        />
-                                        <div className="absolute top-[10px] right-[1px] p-1 rounded-full flex gap-[2px]">
-                                            <button
-                                                type="button"
-                                                onClick={() => handlePrimaryImageSelect(index)}
-                                                className="text-xs text-blue-500"
-                                            >
-                                                {data.primary_image === data.images[index] ? <Star className="h-[18px]" /> : <StarOff className="h-[18px]" />}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleImageDelete(index)}
-                                                className="text-xs text-red-500 ml-2"
-                                            >
-                                                <Trash2 className="h-[18px]" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                <div className="flex flex-wrap gap-2">
+                    {previewImages.map((img, idx) => (
+                        <div key={idx} className="relative">
+                            <img
+                                src={img.url}
+                                className={`w-24 h-24 object-cover rounded ${data.primary_image === img.name ? 'border-4 border-blue-500' : ''}`}
+                            />
+                            <div className="absolute top-1 right-1 flex gap-1">
+                                <button type="button" onClick={() => handlePrimaryImageSelect(img)}>
+                                    <Star className="w-5 h-5 text-blue-600" />
+                                </button>
+                                <button type="button" onClick={() => handleImageDelete(idx)}>
+                                    <Trash2 className="w-5 h-5 text-red-600" />
+                                </button>
                             </div>
-                        )}
-
-                        <div className="flex justify-end gap-2">
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Updating...' : 'Update Product'}
-                            </Button>
                         </div>
-                    </form>
+                    ))}
                 </div>
-            </div>
+
+                <Button type="submit" disabled={processing}>
+                    {processing ? 'Updating...' : 'Update Product'}
+                </Button>
+            </form>
         </AppLayout>
     );
 }

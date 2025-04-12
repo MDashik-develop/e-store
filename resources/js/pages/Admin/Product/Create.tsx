@@ -25,18 +25,16 @@ export default function Create({ categories }) {
             const selectedFiles = Array.from(files);
             setData('images', selectedFiles);
 
-            // Create preview URLs
             const previews = selectedFiles.map(file => URL.createObjectURL(file));
             setPreviewImages(previews);
         }
     };
 
     const handlePrimaryImageSelect = (index: number) => {
-        setData('primary_image', data.images[index]);  // Set primary image
+        setData('primary_image', index); // ✅ Send index instead of File
     };
 
     const handleImageDelete = (index: number) => {
-        // Remove selected image from preview and data
         const newPreviewImages = [...previewImages];
         const newImages = [...data.images];
         newPreviewImages.splice(index, 1);
@@ -45,9 +43,10 @@ export default function Create({ categories }) {
         setPreviewImages(newPreviewImages);
         setData('images', newImages);
 
-        // Reset primary image if it was deleted
-        if (data.primary_image === newImages[index]) {
+        if (data.primary_image === index) {
             setData('primary_image', null);
+        } else if (data.primary_image && data.primary_image > index) {
+            setData('primary_image', data.primary_image - 1); // shift index
         }
     };
 
@@ -56,6 +55,7 @@ export default function Create({ categories }) {
         post('/admin/products', {
             onSuccess: () => {
                 reset();
+                setPreviewImages([]);
             },
         });
     };
@@ -111,7 +111,6 @@ export default function Create({ categories }) {
                             placeholder="Description"
                             value={data.description}
                             onChange={(e) => setData('description', e.target.value)}
-                            required
                             className="w-full p-2 border rounded"
                         ></textarea>
 
@@ -150,7 +149,7 @@ export default function Create({ categories }) {
                                         <img
                                             src={src}
                                             alt={`Preview ${index}`}
-                                            className={`w-24 h-24 object-cover rounded mt-2 ${data.primary_image === data.images[index] ? 'border-4 border-blue-500' : ''}`}
+                                            className={`w-24 h-24 object-cover rounded mt-2 ${data.primary_image === index ? 'border-4 border-blue-500' : ''}`}
                                         />
                                         <div className="absolute top-[10px] right-[1px] p-1 rounded-full flex gap-[2px]">
                                             <button
@@ -158,15 +157,14 @@ export default function Create({ categories }) {
                                                 onClick={() => handlePrimaryImageSelect(index)}
                                                 className="text-xs text-blue-500"
                                             >
-                                                {data.primary_image === data.images[index] ? <Star className="h-[18px]" /> : <StarOff className="h-[18px]" />}
-
+                                                {data.primary_image === index ? <Star className="h-[18px]" /> : <StarOff className="h-[18px]" />}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handleImageDelete(index)}
                                                 className="text-xs text-red-500 ml-2"
                                             >
-                                                <Trash2 className='h-[18px]'/>
+                                                <Trash2 className='h-[18px]' />
                                             </button>
                                         </div>
                                     </div>
