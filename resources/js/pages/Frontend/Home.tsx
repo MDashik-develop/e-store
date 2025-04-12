@@ -9,9 +9,6 @@ export default function Home( { categories } ) {
             <Head title="Home" />
 
             <div className="bg-white">
-            <pre>{JSON.stringify(categories, null, 2)}</pre> {/* Display categories */}
-                
-
                 <Carusel />
                 <CaruselCategory categories={categories} />
 
