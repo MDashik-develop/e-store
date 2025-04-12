@@ -3,15 +3,17 @@ import FrontendLayout from '@/layouts/frontend-layoue';
 import Carusel from '@/components/frontend/Carusel';
 import CaruselCategory from '@/components/frontend/CaruselCategory';
 
-export default function Home() {
+export default function Home( { categories } ) {
     return (
         <FrontendLayout>
             <Head title="Home" />
 
             <div className="bg-white">
+            <pre>{JSON.stringify(categories, null, 2)}</pre> {/* Display categories */}
+                
 
                 <Carusel />
-                <CaruselCategory />
+                <CaruselCategory categories={categories} />
 
                 {/* Hero Section */}
                 <div className="relative bg-gray-900">

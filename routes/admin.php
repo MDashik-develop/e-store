@@ -1,25 +1,26 @@
 <?php
 
-// use Illuminate\Support\Facades\Route;
-// use Inertia\Inertia;
-// use App\Http\Controllers\CategoryController;
-// use App\Http\Controllers\ProductController;
-// use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
+        
+        Route::get('dashboard', function () {
+            return Inertia::render('dashboard');
+        })->name('dashboard');
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('dashboard', function () {
-//         return Inertia::render('dashboard');
-//     })->name('dashboard');
+        Route::get('/', function () {
+            return Inertia::render('dashboard');
+        });
 
-//     Route::get('/admin', function () {
-//         Route::resource('categories', CategoryController::class);
-//         Route::resource('products', ProductController::class);
-//         Route::resource('orders', OrderController::class);
-//     })->name('admin');
+        Route::resource('categories',AdminCategoryController::class);
+        Route::resource('products', AdminProductController::class);
+    });
+});
 
-// });
-
-
-// require __DIR__.'/settings.php';
-// require __DIR__.'/auth.php';

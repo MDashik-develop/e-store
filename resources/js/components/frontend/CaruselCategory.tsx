@@ -5,7 +5,17 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { useRef } from "react";
 
-const CaruselCategory = () => {
+type Category = {
+    id: number;
+    name: string;
+};
+
+interface Props {
+    categories: Category[];
+}
+
+
+const CaruselCategory: React.FC<Props> = ({ categories }) => {
     const sliderRef = useRef<Slider>(null);
     const settings = {
         // dots: true,
@@ -51,54 +61,13 @@ const CaruselCategory = () => {
                     Fashion
                 </p>
             </div>
-            <div className="px-2">
+            {/* <div className="px-2">
                 <img src="https://api.spicezgold.com/download/file_1734525218436_ele.png" alt="Slide 1" />
                 <p>
                     Electronics
                 </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525231018_bag.png" alt="Slide 1" />
-                <p>
-                    Bags
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525239704_foot.png" alt="Slide 3" />
-                <p>
-                    Footwear
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525248057_gro.png" alt="Slide 1" />
-                <p>
-                    Groceries
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525255799_beauty.png" alt="Slide 2" />
-                <p>
-                    Beauty
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525275367_well.png" alt="Slide 3" />
-                <p>
-                    Wellness
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1734525286186_jw.png" alt="Slide 1" />
-                <p>
-                    Jewelry
-                </p>
-            </div>
-            <div className="px-2">
-                <img src="https://api.spicezgold.com/download/file_1743331383201_d1.jpeg" alt="Slide 2" />
-                <p>
-                    Shoe
-                </p>
-            </div>
+            </div> */}
+
         </Slider>
     </div>
   );
