@@ -2,8 +2,9 @@ import { Head } from '@inertiajs/react';
 import FrontendLayout from '@/layouts/frontend-layoue';
 import Carusel from '@/components/frontend/Carusel';
 import CaruselCategory from '@/components/frontend/CaruselCategory';
+import Products from '@/components/frontend/Products';
 
-export default function Home( { categories } ) {
+export default function Home( { categories, products } ) {
     return (
         <FrontendLayout>
             <Head title="Home" />
@@ -33,14 +34,8 @@ export default function Home( { categories } ) {
                 </div>
 
                 {/* Featured Products */}
-                <div className="max-w-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-                    <h2 className="text-2xl font-extrabold text-gray-900 mb-6">
-                        Featured Products
-                    </h2>
-                    <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-                        {/* Product cards will go here */}
-                    </div>
-                </div>
+                <Products products={products} />
+
             </div>
         </FrontendLayout>
     );
