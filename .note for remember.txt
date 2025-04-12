@@ -41,3 +41,4 @@ resources/js/
 
     npm install @fortawesome/fontawesome-free
     npm install sweetalert2
+    npm i jodit-react
