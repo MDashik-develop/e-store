@@ -51,7 +51,7 @@ export default function Create() {
                         <input
                             type="file"
                             onChange={(e) => setData('image', e.target.files[0])}
-                            className="w-full"
+                            className="w-full p-2 border rounded"
                         />
                         {errors.image && <p className="text-red-500">{errors.image}</p>}
 

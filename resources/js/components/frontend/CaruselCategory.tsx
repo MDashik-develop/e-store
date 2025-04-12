@@ -19,10 +19,13 @@ interface Props {
 const CaruselCategory: React.FC<Props> = ({ categories }) => {
     const sliderRef = useRef<Slider>(null);
 
+    const maxSlides = 8;
+    const slidesToShow = Math.min(categories.length, maxSlides);
+
     const settings = {
         infinite: true,
         speed: 500,
-        slidesToShow: 8,
+        slidesToShow,
         slidesToScroll: 1,
         autoplay: true,
         autoplaySpeed: 3000,
