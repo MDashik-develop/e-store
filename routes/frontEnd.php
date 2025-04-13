@@ -13,4 +13,8 @@ use App\Http\Controllers\FrontendController;
 //     return Inertia::render('Frontend/Home');
 // })->name('home');
 
+// ===========Home===========
 Route::get('/',[FrontendController::class,'Index'])->name('home');
+
+// ===========order===========
+Route::get('/orders',[OrderController::class,'index'])->name('order.index');

@@ -21,6 +21,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('categories',AdminCategoryController::class);
         Route::resource('products', AdminProductController::class);
+
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+        // Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        // Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     });
 });
 

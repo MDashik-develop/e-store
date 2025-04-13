@@ -15,8 +15,11 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->decimal('price', 10, 2);
             $table->integer('stock')->default(0);
+            $table->string('size')->nullable();
+            $table->string('color')->nullable();
             $table->integer('featured')->default(0);
-            $table->foreignId('category_id')->constrained();
+            // $table->foreignId('category_id')->constrained();
+            $table->json('category_id');  // Changed this to json
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

@@ -26,7 +26,7 @@ export default function Header() {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4">
-                        <Link href="/cart" className="text-gray-600 hover:text-gray-900">
+                        <Link href="/orders" className="text-gray-600 hover:text-gray-900">
                             <ShoppingCart className="h-6 w-6" />
                         </Link>
                         <Link href="/settings/profile" className="text-gray-600 hover:text-gray-900">

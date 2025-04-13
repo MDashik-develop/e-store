@@ -45,39 +45,55 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         // Step 1: Validation
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:1',
-            'description' => 'nullable',
-            'stock' => 'required|integer|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'status' => 'required|boolean',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'primary_image' => 'nullable|integer|min:0',
-        ]);
-        
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'price' => 'required|numeric|min:1',
+                'description' => 'nullable',
+                'stock' => 'required|integer|min:0',
+                'size' => 'nullable|array',
+                'size.*' => 'string|max:10',
+                'color' => 'nullable|array',
+                'color.*' => 'string|max:50',
+                'category_id' => 'required|array', // Updated to handle an array of categories
+                'category_id.*' => 'exists:categories,id', // Validating each category ID exists in the categories table
+                'status' => 'required|boolean',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'primary_image' => 'nullable|integer|min:0',
+            ]);
+
+        // Convert array fields to JSON if needed
+            if (isset($validated['size'])) {
+                $validated['size'] = json_encode($validated['size']);
+            }
+            if (isset($validated['color'])) {
+                $validated['color'] = json_encode($validated['color']);
+            }
+            if (isset($validated['category_id'])) {
+                $validated['category_id'] = json_encode($validated['category_id']); // Convert category_ids array to JSON
+            }
+            
         // Generate slug
-        $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
+            $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
 
         // Step 2: Create the product
-        $product = Product::create($validated);
+             $product = Product::create($validated);
 
         // Step 3: Handle images
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $random = rand(10000, 99999);
-                $extension = $image->getClientOriginalExtension();
-                $filename = "{$product->id}-" . Str::slug($product->name) . "-{$random}.{$extension}";
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $index => $image) {
+                    $random = rand(10000, 99999);
+                    $extension = $image->getClientOriginalExtension();
+                    $filename = "{$product->id}-" . Str::slug($product->name) . "-{$random}.{$extension}";
 
-                $imagePath = $image->storeAs('products', $filename, 'public');
+                    $imagePath = $image->storeAs('products', $filename, 'public');
 
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image' => $imagePath,
-                    'is_primary' => $index == $request->primary_image,
-                ]);
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image' => $imagePath,
+                        'is_primary' => $index == $request->primary_image,
+                    ]);
+                }
             }
-        }
 
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
     }
@@ -106,51 +122,6 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-
-    // public function update(Request $request, Product $product)
-    // {
-    //     // Validate the input fields
-    //     $validated = $request->validate([
-    //         'name' => 'required|string|max:255|unique:products,name,' . $product->id,
-    //         'status' => 'required|boolean',
-    //     ]);
-
-    //     // Update product information
-    //     $product->update([
-    //         'name' => $validated['name'],
-    //         'status' => $validated['status'],
-    //     ]);
-
-    //     // Handle the uploaded images
-    //     if ($request->hasFile('images')) {
-    //         // Handle the new images (store them in the storage and add to the product)
-    //         foreach ($request->file('images') as $image) {
-    //             // Store the new image in the public storage
-    //             $imagePath = $image->store('products', 'public');
-    //             $product->images()->create([
-    //                 'image' => $imagePath,
-    //                 'is_primary' => $request->primary_image == $image->getClientOriginalName(),
-    //             ]);
-    //         }
-    //     }
-
-    //     // Handle the deletion of images (delete from both storage and the database)
-    //     if ($request->has('deleted_images')) {
-    //         $deletedImages = $request->deleted_images;
-
-    //         foreach ($deletedImages as $deletedImage) {
-    //             // Remove from the database
-    //             $imageRecord = $product->images()->where('image', $deletedImage)->first();
-    //             if ($imageRecord) {
-    //                 // Delete the image from storage
-    //                 Storage::disk('public')->delete($deletedImage);
-    //                 $imageRecord->delete();
-    //             }
-    //         }
-    //     }
-
-    //     return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
-    // }
     public function update(Request $request, Product $product)
     {
         // Validate the request data
