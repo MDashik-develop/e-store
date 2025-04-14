@@ -19,6 +19,7 @@ export default function Create({ categories }) {
         primary_image: null,
     });
 
+    const [colorInput, setColorInput] = useState('');
     const [previewImages, setPreviewImages] = useState<string[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +27,6 @@ export default function Create({ categories }) {
         if (files) {
             const selectedFiles = Array.from(files);
             setData('images', selectedFiles);
-
             const previews = selectedFiles.map(file => URL.createObjectURL(file));
             setPreviewImages(previews);
         }
@@ -41,7 +41,6 @@ export default function Create({ categories }) {
         const newImages = [...data.images];
         newPreviewImages.splice(index, 1);
         newImages.splice(index, 1);
-
         setPreviewImages(newPreviewImages);
         setData('images', newImages);
 
@@ -70,12 +69,30 @@ export default function Create({ categories }) {
         }
     };
 
+    const handleColorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const value = colorInput.trim();
+            if (value && !data.color.includes(value)) {
+                setData('color', [...data.color, value]);
+                setColorInput('');
+            }
+        } else if (e.key === 'Backspace' && colorInput === '') {
+            setData('color', data.color.slice(0, -1));
+        }
+    };
+
+    const removeColor = (index: number) => {
+        setData('color', data.color.filter((_, i) => i !== index));
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/admin/products', {
             onSuccess: () => {
                 reset();
                 setPreviewImages([]);
+                setColorInput('');
             },
         });
     };
@@ -86,7 +103,7 @@ export default function Create({ categories }) {
             <div className="h-full flex items-center justify-center bg-gray-100 p-4">
                 <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl">
                     <h2 className="text-xl font-bold mb-4">Create Product</h2>
-                    <form onSubmit={submit} encType="multipart/form-data" className="space-y-4">
+                    <form onSubmit={submit} className="space-y-4" encType="multipart/form-data">
                         <input
                             type="text"
                             placeholder="Product Name"
@@ -119,7 +136,7 @@ export default function Create({ categories }) {
                             className="w-full p-2 border rounded"
                         />
 
-                        {/* Multi-select Sizes */}
+                        {/* Size selection */}
                         <div>
                             <p className="mb-1 font-semibold">Select Sizes</p>
                             <div className="flex gap-2 flex-wrap">
@@ -146,7 +163,7 @@ export default function Create({ categories }) {
                             {errors.size && <p className="text-red-500">{errors.size}</p>}
                         </div>
 
-                        {/* Multi-select Categories */}
+                        {/* Category selection */}
                         <div>
                             <p className="mb-1 font-semibold">Select Categories</p>
                             <div className="flex gap-2 flex-wrap">
@@ -179,6 +196,41 @@ export default function Create({ categories }) {
                             onChange={(e) => setData('description', e.target.value)}
                             className="w-full p-2 border rounded"
                         ></textarea>
+
+                        {/* Tag-style Color Input */}
+                        <div>
+                            <p className="mb-1 font-semibold">Colors</p>
+                            <div
+                                className="flex flex-wrap items-center border rounded p-2 min-h-[44px] focus-within:ring-2 ring-blue-300"
+                                onClick={() => document.getElementById('color-input')?.focus()}
+                            >
+                                {data.color.map((color, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center bg-blue-100 text-blue-800 rounded px-2 py-1 text-sm mr-2 mb-2"
+                                    >
+                                        <span>{color}</span>
+                                        <button
+                                            type="button"
+                                            className="ml-1 text-blue-600 font-bold"
+                                            onClick={() => removeColor(index)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                                <input
+                                    id="color-input"
+                                    type="text"
+                                    className="flex-1 min-w-[120px] border-none focus:outline-none p-1"
+                                    placeholder="Type color and press Enter"
+                                    value={colorInput}
+                                    onChange={(e) => setColorInput(e.target.value)}
+                                    onKeyDown={handleColorKeyDown}
+                                />
+                            </div>
+                            {errors.color && <p className="text-red-500">{errors.color}</p>}
+                        </div>
 
                         <select
                             value={data.status}
@@ -235,7 +287,7 @@ export default function Create({ categories }) {
                             </div>
                         )}
 
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>
                                 {processing ? 'Creating...' : 'Create Product'}
                             </Button>

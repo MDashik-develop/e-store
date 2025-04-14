@@ -37,8 +37,9 @@ export default function Index({ products: initialProducts }) {
                         <thead>
                             <tr className="bg-gray-100 text-center">
                                 <th className="border px-2 py-2 text-center">ID</th>
-                                <th className="border px-3 py-2 text-center">Image</th>
-                                <th className="border px-4 py-2 text-center">Name</th>
+                                <th className="border px-2 py-2 text-center">Image</th>
+                                <th className="border px-2 py-2 text-center">Name</th>
+                                <th className="border px-2 py-2 text-center">Price</th>
                                 <th className="border px-4 py-2 text-center">Status</th>
                                 <th className="border px-4 py-2 text-center">Actions</th>
                             </tr>
@@ -65,6 +66,7 @@ export default function Index({ products: initialProducts }) {
                                             )}
                                         </td>
                                         <td className="border py-2">{product.name}</td>
+                                        <td className="border py-2">{product.price}</td>
                                         <td className="border py-2">
                                             <span
                                                 className={`px-2 py-1 rounded text-xs font-medium ${

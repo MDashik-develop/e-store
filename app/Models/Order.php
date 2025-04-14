@@ -11,8 +11,20 @@ class Order extends Model
         'customer_name',
         'phone',
         'address',
+        'email',
+        'shipping_address',
+        'product_id',
+        'quantity',
+        'product_name',
+        'product_description',
+        'product_price',
+        'product_discount',
+        'product_size',
+        'product_color',
         'total_amount',
-        'status'
+        'status',
+        'payment_method',
+        'delivery_date'
     ];
 
     public function user()
