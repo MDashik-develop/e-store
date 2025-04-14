@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FrontendController extends Controller
-{
+{ 
     // Display the homepage with categories and products
     public function Index()
     {
