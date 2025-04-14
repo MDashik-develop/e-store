@@ -18,3 +18,4 @@ Route::get('/',[FrontendController::class,'Index'])->name('home');
 
 // ===========order===========
 Route::get('/orders',[OrderController::class,'index'])->name('order.index');
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');

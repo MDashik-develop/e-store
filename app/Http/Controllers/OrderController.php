@@ -32,44 +32,51 @@ class OrderController extends Controller
             'phone'            => 'required|string|max:20',
             'email'            => 'required|email|max:255',
             'address'          => 'required|string',
+            'shipping_address' => 'required|string',
             'price'            => 'required|numeric|min:0',
             'quantity'         => 'required|min:1',
             'total_amount'     => 'required|numeric|min:0',
-            'size'             => 'array',
-            'color'            => 'array',
+            'size'             => 'required|array', // Allow null or array
+            'size.*'           => 'string|max:50',
+            'color'            => 'required|array', // Allow null or array
+            'color.*'          => 'string|max:50',
             'product_name'     => 'required|string|max:100',
             'product_description' => 'nullable|string',
-            'payment_method'   => 'nullable|string',
-            'delivery_date'    => 'nullable|date',
+            // 'payment_method'   => 'nullable|string',
+            // 'delivery_date'    => 'nullable|date',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors(),
-            ], 422);
+        // Prepare validated data
+        $validated = $validator->validated();
+
+        // Convert array fields to JSON if needed
+        if (isset($validated['size'])) {
+            $validated['size'] = json_encode($validated['size']);
+        }
+        if (isset($validated['color'])) {
+            $validated['color'] = json_encode($validated['color']);
         }
 
         // Create order record
         $order = Order::create([
-            'user_id'          => auth()->id(), // Optional: Use user authentication if required
-            'customer_name'    => $request->customer_name,
-            'phone'            => $request->phone,
-            'email'            => $request->email,
+            'user_id'          => auth()->id(),
+            'customer_name'    => $validated['customer_name'],
+            'phone'            => $validated['phone'],
+            'email'            => $validated['email'],
+            'address'          => $validated['address'],
+            'quantity'         => $validated['quantity'],
+            'total_amount'     => $validated['total_amount'],
             'shipping_address' => $request->shipping_address,
-            'address'          => $request->address,
-            'product_price'            => $request->price,
-            'quantity'         => $request->quantity,
-            'total_amount'     => $request->total_amount,
-'size' => json_encode($request->input('size', [])),
-'color' => json_encode($request->input('color', [])),
-            'product_name'     => $request->product_name,
-            'product_id'       => $request->product_id, // Add product_id here    
-            'product_description' => $request->product_description,
-            'payment_method'   => $request->payment_method,
-            'delivery_date'    => $request->delivery_date,
-            'status'           => 'pending', // Default order status
+            'payment_method'   => "Cash on Delivery", // Assuming default payment method
+            'product_price'    => $validated['price'],
+            'product_size'     => $validated['size'] ?? null, // Save JSON or null
+            'product_color'    => $validated['color'] ?? null, // Save JSON or null
+            'product_name'     => $validated['product_name'],
+            'product_id'       => $request->product_id,
+            'product_description' => $validated['product_description'],
+            // 'delivery_date'    => $validated['delivery_date'],
+            // 'status'           => 'pending',
         ]);
-
 
         return redirect()->route('home')->with('success', __('Order placed successfully!'));
     }
