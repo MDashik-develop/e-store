@@ -60,12 +60,12 @@ export default function Order({ products }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        router.post('/admin/orders', form, {
+        router.post('/orders', form, {
             onError: (err) => {
                 setErrors(err);
             },
             onSuccess: () => {
-                alert('Order placed successfully!');
+                // alert('Order placed successfully!');
                 setForm({
                     product_name: products.name,
                     product_id: products.id,

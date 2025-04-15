@@ -26,6 +26,7 @@ class OrderController extends Controller
     // store order
     public function store(Request $request)
     {
+        // sleep(2);
         // Validate the request data
         $validator = Validator::make($request->all(), [
             'customer_name'    => 'required|string|max:255',
