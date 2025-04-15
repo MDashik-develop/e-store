@@ -16,6 +16,9 @@ use App\Http\Controllers\FrontendController;
 // ===========Home===========
 Route::get('/',[FrontendController::class,'Index'])->name('home');
 
-// ===========order===========
-Route::get('/orders',[OrderController::class,'index'])->name('order.index');
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // ===========order===========
+    Route::get('/orders',[OrderController::class,'index'])->name('order.index');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+});
