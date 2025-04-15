@@ -189,41 +189,51 @@ export default function Index({ orders: initialOrders }) {
 
                             {/* Customer & Status */}
                             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <div>
-                                    <h3 className="mb-1 mb-3 font-semibold text-gray-700">Customer</h3>
-                                    <p>{selectedOrder.customer_name}</p>
-                                    <p>{selectedOrder.phone}</p>
-                                    <p>{selectedOrder.email}</p>
-                                    <p>{selectedOrder.address}</p>
+                                <div className="flex justify-start">
+                                    <div className=''>
+                                        <h3 className="mb-1 mb-3 font-semibold text-gray-700">Customer info</h3>
+                                        <p>{selectedOrder.customer_name}</p>
+                                        <p>{selectedOrder.phone}</p>
+                                        <p>{selectedOrder.email}</p>
+                                        <p>{selectedOrder.address}</p>
+                                    </div>
                                 </div>
-                                <div className="text-right md:text-left">
-                                    <h3 className="mb-1 mb-3 font-semibold text-gray-700">Shipping Info</h3>
-                                    <p>
-                                        <strong className="text-gray-500">Delivery: </strong> {selectedOrder.shipping_address}
-                                    </p>
+                                <div className='flex justify-start md:justify-end'>
+                                    <div className="text-left">
+                                        <h3 className="mb-1 mb-3 font-semibold text-gray-700">Shipping Info</h3>
+                                        <p>
+                                            <strong className="text-gray-500">Delivery: </strong> {selectedOrder.shipping_address}
+                                        </p>
                                         <p>
                                             <strong className="text-gray-500">Delivery: </strong>{' '}
                                             {new Date(selectedOrder.delivery_date).toLocaleDateString()}
                                         </p>
                                         <p>
-                                            <strong className="text-gray-600">Payment Method: </strong>{'   d'} {selectedOrder.payment_method}
+                                            <strong className="text-gray-600">Payment Method: </strong>
+                                            {selectedOrder.payment_method}
                                         </p>
-                    <p>
-                                            <strong className="text-gray-500">Payment Status: </strong> {selectedOrder.payment_status}
-                                        <span
-                                            className={`mt-2 inline-block rounded px-2 py-1 text-xs font-bold tracking-wide uppercase ${
-                                                selectedOrder.status === 'completed'
-                                                    ? 'bg-green-500 text-white'
-                                                    : selectedOrder.status === 'pending'
-                                                      ? 'bg-yellow-400 text-black'
-                                                      : selectedOrder.status === 'cancelled'
-                                                        ? 'bg-red-500 text-white'
-                                                        : 'bg-blue-500 text-white'
-                                            }`}
-                                        >
-                                            {selectedOrder.status}
-                                        </span>
-                                    </p>
+                                        <p>
+                                            <strong className="text-gray-500">Payment Status: </strong>
+                                            {selectedOrder.payment_status}
+                                        </p>
+                                        <p>
+                                            <strong className="text-gray-500">Order Status: </strong>
+                                            {' '}
+                                            <span
+                                                className={`mt-2 inline-block rounded px-2 py-1 text-xs font-bold tracking-wide uppercase ${
+                                                    selectedOrder.status === 'completed'
+                                                        ? 'bg-green-500 text-white'
+                                                        : selectedOrder.status === 'pending'
+                                                        ? 'bg-yellow-400 text-black'
+                                                        : selectedOrder.status === 'cancelled'
+                                                            ? 'bg-red-500 text-white'
+                                                            : 'bg-blue-500 text-white'
+                                                }`}
+                                            >
+                                                {selectedOrder.status}
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
